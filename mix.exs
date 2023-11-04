@@ -5,7 +5,7 @@ defmodule MakeupSql.MixProject do
     [
       app: :makeup_sql,
       description: "SQL lexer for the Makeup syntax highlighter.",
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
