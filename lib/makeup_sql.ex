@@ -1026,18 +1026,19 @@ defmodule MakeupSql do
     |> repeat(ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z]))
     |> token(:name)
 
+  interpolation =
+    1..20
+    |> Enum.map(&"$#{&1}")
+    |> Enum.map(&string/1)
+    |> choice()
+    |> token(:name)
+
   operator =
     ascii_char([?+, ?*, ?/, ?<, ?>, ?=, ?~, ?!, ?@, ?#, ?%, ?^, ?&, ?|, ?`, ??, ?-])
     |> token(:operator)
 
   punctuation = ascii_char([?;, ?:, ?(, ?), ?[, ?], ?., ?,]) |> token(:punctuation)
 
-  interpolation =
-    1..20
-    |> Enum.map(&"$#{&1}")
-    |> Enum.map(&string/1)
-    |> choice()
-    |> token(:keyword_type)
 
   token =
     choice([
@@ -1047,11 +1048,11 @@ defmodule MakeupSql do
       keywords,
       built_in,
       operator,
-      interpolation,
       integer(min: 1),
       double_quote_string,
       single_quote_string,
       name,
+      interpolation,
       punctuation
     ])
 
