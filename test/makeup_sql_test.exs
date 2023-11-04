@@ -21,6 +21,7 @@ defmodule MakeupSqlTest do
     """
 
     tokens = MakeupSql.lex(query)
+
     assert is_list(tokens)
     assert hd(tokens) == {:keyword_reserved, %{language: :sql}, "WITH"}
   end

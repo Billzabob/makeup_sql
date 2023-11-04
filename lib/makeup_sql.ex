@@ -1027,7 +1027,7 @@ defmodule MakeupSql do
     |> token(:name)
 
   interpolation =
-    1..20
+    1..9
     |> Enum.map(&"$#{&1}")
     |> Enum.map(&string/1)
     |> choice()
@@ -1038,7 +1038,6 @@ defmodule MakeupSql do
     |> token(:operator)
 
   punctuation = ascii_char([?;, ?:, ?(, ?), ?[, ?], ?., ?,]) |> token(:punctuation)
-
 
   token =
     choice([
@@ -1051,8 +1050,8 @@ defmodule MakeupSql do
       integer(min: 1),
       double_quote_string,
       single_quote_string,
-      name,
       interpolation,
+      name,
       punctuation
     ])
 
