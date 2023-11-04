@@ -12,11 +12,16 @@ defmodule MakeupSql do
   @impl Makeup.Lexer
   def lex(text, opts \\ []) do
     group_prefix = Keyword.get(opts, :group_prefix, random_prefix(10))
-    {:ok, tokens, "", _, _, _} = root(text)
 
-    tokens
-    |> postprocess([])
-    |> match_groups(group_prefix)
+    case root(text) do
+      {:ok, tokens, "", _, _, _} ->
+        tokens
+        |> postprocess([])
+        |> match_groups(group_prefix)
+
+      {:ok, _tokens, not_parsed, _, _, _} ->
+        raise "unsupported expression: " <> not_parsed
+    end
   end
 
   @impl Makeup.Lexer
@@ -1025,7 +1030,14 @@ defmodule MakeupSql do
     ascii_char([?+, ?*, ?/, ?<, ?>, ?=, ?~, ?!, ?@, ?#, ?%, ?^, ?&, ?|, ?`, ??, ?-])
     |> token(:operator)
 
-  punctuation = ascii_char([?;, ?:, ?(, ?), ?[, ?], ?.]) |> token(:punctuation)
+  punctuation = ascii_char([?;, ?:, ?(, ?), ?[, ?], ?., ?,]) |> token(:punctuation)
+
+  interpolation =
+    1..20
+    |> Enum.map(&"$#{&1}")
+    |> Enum.map(&string/1)
+    |> choice()
+    |> token(:keyword_type)
 
   token =
     choice([
@@ -1035,6 +1047,7 @@ defmodule MakeupSql do
       keywords,
       built_in,
       operator,
+      interpolation,
       integer(min: 1),
       double_quote_string,
       single_quote_string,
