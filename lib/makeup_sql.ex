@@ -1021,8 +1021,13 @@ defmodule MakeupSql do
   double_quote_string = string_like("\"", "\"", [escaped_char], :string_double)
   single_quote_string = string_like("\'", "\'", [escaped_char], :string_single)
 
+  number =
+    ascii_char([?0..?9])
+    |> repeat(ascii_char([?0..?9]))
+    |> token(:number)
+
   name =
-    ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z])
+    ascii_char([?_, ?a..?z, ?A..?Z])
     |> repeat(ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z]))
     |> token(:name)
 
@@ -1050,6 +1055,7 @@ defmodule MakeupSql do
       double_quote_string,
       single_quote_string,
       interpolation,
+      number,
       name,
       punctuation
     ])
