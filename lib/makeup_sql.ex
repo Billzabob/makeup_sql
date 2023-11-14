@@ -1022,7 +1022,7 @@ defmodule MakeupSql do
   single_quote_string = string_like("\'", "\'", [escaped_char], :string_single)
 
   name =
-    ascii_char([?_, ?a..?z, ?A..?Z])
+    ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z])
     |> repeat(ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z]))
     |> token(:name)
 
@@ -1047,7 +1047,6 @@ defmodule MakeupSql do
       keywords,
       built_in,
       operator,
-      integer(min: 1),
       double_quote_string,
       single_quote_string,
       interpolation,
