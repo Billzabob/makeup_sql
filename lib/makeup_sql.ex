@@ -321,7 +321,6 @@ defmodule MakeupSql do
       "EXTERNAL",
       "EXTRACT",
       "FALLBACK",
-      "FALSE",
       "FASTEXPORT",
       "FENCED",
       "FETCH",
@@ -567,7 +566,6 @@ defmodule MakeupSql do
       "NO_WRITE_TO_BINLOG",
       "NTH_VALUE",
       "NTILE",
-      "NULL",
       "NULLIF",
       "NULLIFZERO",
       "NULLS",
@@ -888,7 +886,6 @@ defmodule MakeupSql do
       "TRIGGER",
       "TRIM",
       "TRIM_ARRAY",
-      "TRUE",
       "TRUNCATE",
       "TRY_CONVERT",
       "TSEQUAL",
@@ -1010,8 +1007,18 @@ defmodule MakeupSql do
     choice((built_in ++ Enum.map(built_in, &String.downcase/1)) |> Enum.map(&string/1))
     |> token(:keyword_type)
 
-  whitespace = ascii_char([?\s, ?\t, ?\r, ?\n, ?\f]) |> token(:whitespace)
+  @known_whitespace_characters [?\r, ?\s, ?\n, ?\f, ?\t]
+
+  whitespace = ascii_string(@known_whitespace_characters, min: 1) |> token(:whitespace)
   newline = ascii_char([?\r, ?\n])
+
+  keyword_constants =
+    word_from_list(
+      ["TRUE", "FALSE", "NULL", "true", "false", "null"],
+      :keyword_constant
+    )
+
+  any_char = utf8_char([]) |> token(:error)
 
   single_line_comment =
     string("--") |> lookahead_not(newline) |> repeat(utf8_char([])) |> token(:comment_single)
@@ -1056,8 +1063,11 @@ defmodule MakeupSql do
       single_quote_string,
       interpolation,
       number,
+      keyword_constants,
       name,
-      punctuation
+      punctuation,
+      # fallback for not known
+      any_char
     ])
 
   defparsec(
