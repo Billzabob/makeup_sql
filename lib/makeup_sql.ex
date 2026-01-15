@@ -999,18 +999,22 @@ defmodule MakeupSql do
     ]
     |> Enum.reverse()
 
+  # lookahead to ensure we don't match keywords as prefixes of identifiers
+  not_identifier_char = lookahead_not(ascii_char([?_, ?0..?9, ?a..?z, ?A..?Z]))
+
   keywords =
     choice((keywords ++ Enum.map(keywords, &String.downcase/1)) |> Enum.map(&string/1))
+    |> concat(not_identifier_char)
     |> token(:keyword_reserved)
 
   built_in =
     choice((built_in ++ Enum.map(built_in, &String.downcase/1)) |> Enum.map(&string/1))
+    |> concat(not_identifier_char)
     |> token(:keyword_type)
 
   @known_whitespace_characters [?\r, ?\s, ?\n, ?\f, ?\t]
 
   whitespace = ascii_string(@known_whitespace_characters, min: 1) |> token(:whitespace)
-  newline = ascii_char([?\r, ?\n])
 
   keyword_constants =
     word_from_list(
@@ -1021,7 +1025,7 @@ defmodule MakeupSql do
   any_char = utf8_char([]) |> token(:error)
 
   single_line_comment =
-    string("--") |> lookahead_not(newline) |> repeat(utf8_char([])) |> token(:comment_single)
+    string("--") |> repeat(utf8_char([{:not, ?\r}, {:not, ?\n}])) |> token(:comment_single)
 
   multi_line_comment = many_surrounded_by(utf8_char([]), "/*", "*/") |> token(:comment_multiline)
   escaped_char = string("\\") |> utf8_string([], 1)
